@@ -1,0 +1,57 @@
+menu "Toy Robot"
+
+menu "Microphone (INMP441, I2S)"
+    config MIC_I2S_SCK_GPIO
+        int "SCK (BCLK) GPIO"
+        default 4
+    config MIC_I2S_WS_GPIO
+        int "WS (LRCLK) GPIO"
+        default 5
+    config MIC_I2S_SD_GPIO
+        int "SD (data) GPIO"
+        default 6
+    config MIC_GAIN_SHIFT
+        int "Sample shift (32->16 bit); lower = louder"
+        range 8 18
+        default 14
+        help
+            The INMP441 sends 24-bit samples in 32-bit slots. They are shifted right by this many bits
+            to get 16-bit PCM. 16 is unity, 14 gives +12 dB which suits speech recognition at arm's length.
+    config MIC_SPACING_MM
+        int "Distance between the two mics (mm)"
+        range 20 150
+        default 60
+        help
+            Measured centre to centre. Used by direction-of-arrival; recommended 40-65 mm.
+endmenu
+
+menu "Sound direction (DOA)"
+    config DOA_MIN_LEVEL_DB
+        int "Minimum loudness to report a direction (dBFS)"
+        range -80 0
+        default -50
+        help
+            Quieter frames are ignored so background noise doesn't move the estimate.
+    config DOA_RESOLUTION_DEG
+        int "Angle search resolution (degrees)"
+        range 1 45
+        default 10
+endmenu
+
+menu "Speaker (MAX98357, I2S)"
+    config SPK_I2S_BCLK_GPIO
+        int "BCLK GPIO"
+        default 15
+    config SPK_I2S_LRC_GPIO
+        int "LRC (WS) GPIO"
+        default 16
+    config SPK_I2S_DIN_GPIO
+        int "DIN GPIO"
+        default 7
+    config SPK_VOLUME
+        int "Tone volume (percent)"
+        range 0 100
+        default 30
+endmenu
+
+endmenu
