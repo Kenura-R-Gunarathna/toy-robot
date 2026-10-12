@@ -1,0 +1,325 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Toy Robot Wiring</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<style>
+/* Layout: one bench sheet. Schematic on top, pin tables per module, then pre-power checks. Wire colours follow I2S role. */
+:root {
+  --bg: #eef2f5;
+  --panel: #ffffff;
+  --ink: #1a2530;
+  --muted: #5a6877;
+  --line: #d3dae2;
+  --accent: #1f62c4;
+  --w-3v3: #cf3a2e;
+  --w-5v: #d98200;
+  --w-gnd: #1a2530;
+  --w-clk: #1f6fd1;
+  --w-ws: #17935a;
+  --w-data: #8a3fc7;
+  --w-spk: #8b6a48;
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11171d; --panel: #18212a; --ink: #e2e8ee; --muted: #93a1b0; --line: #2b3642; --accent: #6aa6ff;
+    --w-3v3: #ff6a5c; --w-5v: #ffab36; --w-gnd: #e2e8ee; --w-clk: #5ea4ff; --w-ws: #3fcf88; --w-data: #bb8dff; --w-spk: #cda57e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11171d; --panel: #18212a; --ink: #e2e8ee; --muted: #93a1b0; --line: #2b3642; --accent: #6aa6ff;
+  --w-3v3: #ff6a5c; --w-5v: #ffab36; --w-gnd: #e2e8ee; --w-clk: #5ea4ff; --w-ws: #3fcf88; --w-data: #bb8dff; --w-spk: #cda57e;
+  color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 64px; display: grid; gap: 36px; }
+
+header { display: grid; gap: 6px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(28px, 4vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-display); font-weight: 700; font-size: 20px; margin: 0; text-wrap: balance; }
+h3 { font-family: var(--font-display); font-weight: 500; font-size: 16px; margin: 0; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+code, .mono { font-family: var(--font-mono); font-size: .92em; }
+
+figure { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 16px; }
+.scroll { overflow-x: auto; }
+figure svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+figcaption { color: var(--muted); font-size: 14px; max-width: 75ch; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { width: 22px; height: 4px; border-radius: 2px; display: inline-block; }
+
+/* SVG styling via page CSS (no <style> inside the SVG) */
+.box { fill: var(--panel); stroke: var(--ink); stroke-width: 1.5; }
+.box-esp { fill: var(--bg); stroke: var(--ink); stroke-width: 2; }
+.pin { fill: var(--ink); }
+.t { fill: var(--ink); font-family: var(--font-mono); font-size: 12px; }
+.t-muted { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; }
+.t-title { fill: var(--ink); font-family: var(--font-display); font-weight: 700; font-size: 14px; }
+.t-big { fill: var(--ink); font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.t-note { font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; }
+.w { fill: none; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.w-3v3 { stroke: var(--w-3v3); } .w-5v { stroke: var(--w-5v); } .w-gnd { stroke: var(--w-gnd); }
+.w-clk { stroke: var(--w-clk); } .w-ws { stroke: var(--w-ws); } .w-data { stroke: var(--w-data); } .w-spk { stroke: var(--w-spk); }
+.dot-3v3 { fill: var(--w-3v3); } .dot-gnd { fill: var(--w-gnd); } .dot-clk { fill: var(--w-clk); } .dot-ws { fill: var(--w-ws); } .dot-data { fill: var(--w-data); }
+.fill-3v3 { fill: var(--w-3v3); } .fill-gnd { fill: var(--w-gnd); }
+.nc { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+.spk { fill: var(--panel); stroke: var(--ink); stroke-width: 1.5; }
+
+.tables { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px 18px 8px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-family: var(--font-mono); font-weight: 400; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 4px 0 8px; border-bottom: 1px solid var(--line); }
+td { padding: 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-family: var(--font-mono); font-weight: 600; width: 34%; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; vertical-align: 0; }
+.diff td { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.diff td:first-child { padding-left: 6px; }
+.sub { display: block; color: var(--muted); font-size: 12.5px; }
+
+.checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.checks section { display: grid; gap: 10px; align-content: start; min-width: 0; }
+ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; }
+li { max-width: 65ch; }
+.avoid { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-family: var(--font-mono); font-size: 12px; padding: 3px 8px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel); }
+.chip b { font-weight: 600; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">ESP32-S3-N16R8 · 2× INMP441 · MAX98357A · 4 Ω 3 W speaker</div>
+    <h1>Toy Robot Wiring</h1>
+    <p class="lede">Every connection the firmware expects, with the default pins from <code>menuconfig → Toy Robot</code>. Pin positions on your devkit will differ from the drawing, so match connections by label, not by position.</p>
+  </header>
+
+  <figure>
+    <div class="scroll">
+      <svg viewBox="0 0 1000 590" role="img" aria-label="Both INMP441 mics share 3V3, GND, SCK on GPIO 4, WS on GPIO 5 and SD on GPIO 6; mic A has L/R tied to GND and mic B has L/R tied to 3V3. The MAX98357 takes LRC from GPIO 16, BCLK from GPIO 15, DIN from GPIO 7, power from 5V and GND, and drives the speaker.">
+
+        <!-- ===== Mic A ===== -->
+        <text class="t-title" x="40" y="104">INMP441 · Mic A</text>
+        <rect class="box" x="40" y="115" width="180" height="170" rx="6"/>
+        <text class="t" x="208" y="144" text-anchor="end">VDD</text>
+        <text class="t" x="208" y="169" text-anchor="end">GND</text>
+        <text class="t" x="208" y="194" text-anchor="end" font-weight="600">L/R</text>
+        <text class="t" x="208" y="219" text-anchor="end">WS</text>
+        <text class="t" x="208" y="244" text-anchor="end">SCK</text>
+        <text class="t" x="208" y="269" text-anchor="end">SD</text>
+        <text class="t-muted" x="56" y="144">left channel</text>
+        <text class="t-note fill-gnd" x="40" y="306">L/R → GND = LEFT</text>
+
+        <!-- ===== Mic B ===== -->
+        <text class="t-title" x="40" y="354">INMP441 · Mic B</text>
+        <rect class="box" x="40" y="365" width="180" height="170" rx="6"/>
+        <text class="t" x="208" y="394" text-anchor="end">VDD</text>
+        <text class="t" x="208" y="419" text-anchor="end">GND</text>
+        <text class="t" x="208" y="444" text-anchor="end" font-weight="600">L/R</text>
+        <text class="t" x="208" y="469" text-anchor="end">WS</text>
+        <text class="t" x="208" y="494" text-anchor="end">SCK</text>
+        <text class="t" x="208" y="519" text-anchor="end">SD</text>
+        <text class="t-muted" x="56" y="394">right channel</text>
+        <text class="t-note fill-3v3" x="40" y="556">L/R → 3V3 = RIGHT</text>
+
+        <!-- Mic bus: vertical rails -->
+        <path class="w w-3v3" d="M220 140 H260 V440 H220"/>
+        <path class="w w-3v3" d="M220 390 H260"/>
+        <path class="w w-gnd" d="M220 165 H280 V415 H220"/>
+        <path class="w w-gnd" d="M220 190 H280"/>
+        <path class="w w-ws" d="M220 215 H300 V465 H220"/>
+        <path class="w w-clk" d="M220 240 H320 V490 H220"/>
+        <path class="w w-data" d="M220 265 H340 V515 H220"/>
+
+        <!-- Rails to ESP32 -->
+        <path class="w w-3v3" d="M260 200 H420"/>
+        <path class="w w-gnd" d="M280 240 H420"/>
+        <path class="w w-ws" d="M300 280 H420"/>
+        <path class="w w-clk" d="M320 320 H420"/>
+        <path class="w w-data" d="M340 360 H420"/>
+
+        <!-- Junctions -->
+        <circle class="dot-3v3" cx="260" cy="390" r="4"/>
+        <circle class="dot-3v3" cx="260" cy="200" r="4"/>
+        <circle class="dot-gnd" cx="280" cy="190" r="4"/>
+        <circle class="dot-gnd" cx="280" cy="240" r="4"/>
+        <circle class="dot-ws" cx="300" cy="280" r="4"/>
+        <circle class="dot-clk" cx="320" cy="320" r="4"/>
+        <circle class="dot-data" cx="340" cy="360" r="4"/>
+
+        <!-- Mic pins (drawn after wires so they sit on top) -->
+        <g class="pin">
+          <rect x="216" y="136" width="8" height="8"/><rect x="216" y="161" width="8" height="8"/><rect x="216" y="186" width="8" height="8"/>
+          <rect x="216" y="211" width="8" height="8"/><rect x="216" y="236" width="8" height="8"/><rect x="216" y="261" width="8" height="8"/>
+          <rect x="216" y="386" width="8" height="8"/><rect x="216" y="411" width="8" height="8"/><rect x="216" y="436" width="8" height="8"/>
+          <rect x="216" y="461" width="8" height="8"/><rect x="216" y="486" width="8" height="8"/><rect x="216" y="511" width="8" height="8"/>
+        </g>
+
+        <!-- ===== ESP32-S3 ===== -->
+        <rect class="box-esp" x="420" y="160" width="220" height="280" rx="8"/>
+        <text class="t" x="430" y="204">3V3</text>
+        <text class="t" x="430" y="244">GND</text>
+        <text class="t" x="430" y="284">GPIO 5</text>
+        <text class="t" x="430" y="324">GPIO 4</text>
+        <text class="t" x="430" y="364">GPIO 6</text>
+        <text class="t" x="630" y="204" text-anchor="end">GPIO 16</text>
+        <text class="t" x="630" y="244" text-anchor="end">GPIO 15</text>
+        <text class="t" x="630" y="284" text-anchor="end">GPIO 7</text>
+        <text class="t" x="630" y="324" text-anchor="end">GND</text>
+        <text class="t" x="630" y="364" text-anchor="end">5V</text>
+        <text class="t-big" x="530" y="408" text-anchor="middle">ESP32-S3</text>
+        <text class="t-muted" x="530" y="426" text-anchor="middle">N16R8 devkit</text>
+        <text class="t-muted" x="530" y="182" text-anchor="middle">I2S0 in · I2S1 out</text>
+        <rect x="505" y="440" width="50" height="14" rx="3" class="box"/>
+        <text class="t-muted" x="530" y="474" text-anchor="middle">USB port (console + flash)</text>
+        <g class="pin">
+          <rect x="416" y="196" width="8" height="8"/><rect x="416" y="236" width="8" height="8"/><rect x="416" y="276" width="8" height="8"/>
+          <rect x="416" y="316" width="8" height="8"/><rect x="416" y="356" width="8" height="8"/>
+          <rect x="636" y="196" width="8" height="8"/><rect x="636" y="236" width="8" height="8"/><rect x="636" y="276" width="8" height="8"/>
+          <rect x="636" y="316" width="8" height="8"/><rect x="636" y="356" width="8" height="8"/>
+        </g>
+
+        <!-- ===== ESP32 → MAX98357 ===== -->
+        <path class="w w-ws" d="M640 200 H680 V150 H780"/>
+        <path class="w w-clk" d="M640 240 H695 V180 H780"/>
+        <path class="w w-data" d="M640 280 H710 V210 H780"/>
+        <path class="w w-gnd" d="M640 320 H725 V300 H780"/>
+        <path class="w w-5v" d="M640 360 H740 V330 H780"/>
+
+        <!-- ===== MAX98357 ===== -->
+        <text class="t-title" x="780" y="110">MAX98357A amp</text>
+        <rect class="box" x="780" y="120" width="180" height="260" rx="6"/>
+        <text class="t" x="792" y="154">LRC</text>
+        <text class="t" x="792" y="184">BCLK</text>
+        <text class="t" x="792" y="214">DIN</text>
+        <text class="t" x="792" y="244">GAIN</text>
+        <text class="t" x="792" y="274">SD</text>
+        <text class="t" x="792" y="304">GND</text>
+        <text class="t" x="792" y="334">VIN</text>
+        <text class="t-muted" x="852" y="244">open = 9 dB</text>
+        <text class="t-muted" x="852" y="274">open = on, L+R</text>
+        <circle class="nc" cx="770" cy="240" r="3.5"/>
+        <circle class="nc" cx="770" cy="270" r="3.5"/>
+        <text class="t-muted" x="762" y="244" text-anchor="end">NC</text>
+        <text class="t-muted" x="762" y="274" text-anchor="end">NC</text>
+        <text class="t" x="840" y="372" text-anchor="middle">+</text>
+        <text class="t" x="900" y="372" text-anchor="middle">−</text>
+        <g class="pin">
+          <rect x="776" y="146" width="8" height="8"/><rect x="776" y="176" width="8" height="8"/><rect x="776" y="206" width="8" height="8"/>
+          <rect x="776" y="236" width="8" height="8"/><rect x="776" y="266" width="8" height="8"/><rect x="776" y="296" width="8" height="8"/>
+          <rect x="776" y="326" width="8" height="8"/>
+          <rect x="836" y="376" width="8" height="8"/><rect x="896" y="376" width="8" height="8"/>
+        </g>
+
+        <!-- ===== Speaker ===== -->
+        <path class="w w-spk" d="M840 384 V425 H860 V450"/>
+        <path class="w w-spk" d="M900 384 V425 H880 V450"/>
+        <rect class="spk" x="850" y="450" width="40" height="24" rx="2"/>
+        <polygon class="spk" points="850,474 890,474 918,514 822,514"/>
+        <text class="t-title" x="870" y="540" text-anchor="middle">Speaker</text>
+        <text class="t-muted" x="870" y="556" text-anchor="middle">4 Ω · 3 W</text>
+      </svg>
+    </div>
+    <div class="legend" aria-label="Wire colours">
+      <span><i style="background:var(--w-3v3)"></i>3V3</span>
+      <span><i style="background:var(--w-5v)"></i>5V</span>
+      <span><i style="background:var(--w-gnd)"></i>GND</span>
+      <span><i style="background:var(--w-clk)"></i>Bit clock (SCK / BCLK)</span>
+      <span><i style="background:var(--w-ws)"></i>Word select (WS / LRC)</span>
+      <span><i style="background:var(--w-data)"></i>Audio data (SD / DIN)</span>
+      <span><i style="background:var(--w-spk)"></i>Speaker output</span>
+    </div>
+    <figcaption>Both mics sit on one shared I2S bus. The only wire that differs between them is L/R, which puts each mic in its own stereo slot. A dot marks a connection; wires that cross without a dot are not connected.</figcaption>
+  </figure>
+
+  <div class="tables">
+    <section class="card">
+      <h3>INMP441 mics (I2S0, input)</h3>
+      <table>
+        <thead><tr><th>Mic pin</th><th>Connect to</th></tr></thead>
+        <tbody>
+          <tr><td><span class="sw" style="background:var(--w-3v3)"></span>VDD</td><td>3V3 (both mics)<span class="sub">Never 5V, which damages the mic</span></td></tr>
+          <tr><td><span class="sw" style="background:var(--w-gnd)"></span>GND</td><td>GND (both mics)</td></tr>
+          <tr class="diff"><td>L/R</td><td>Mic A → <b>GND</b><br>Mic B → <b>3V3</b><span class="sub">Selects left / right channel</span></td></tr>
+          <tr><td><span class="sw" style="background:var(--w-clk)"></span>SCK</td><td>GPIO 4 (shared)</td></tr>
+          <tr><td><span class="sw" style="background:var(--w-ws)"></span>WS</td><td>GPIO 5 (shared)</td></tr>
+          <tr><td><span class="sw" style="background:var(--w-data)"></span>SD</td><td>GPIO 6 (shared)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h3>MAX98357A amp (I2S1, output)</h3>
+      <table>
+        <thead><tr><th>Amp pin</th><th>Connect to</th></tr></thead>
+        <tbody>
+          <tr><td><span class="sw" style="background:var(--w-5v)"></span>VIN</td><td>5V<span class="sub">More headroom for the 4 Ω speaker than 3V3</span></td></tr>
+          <tr><td><span class="sw" style="background:var(--w-gnd)"></span>GND</td><td>GND</td></tr>
+          <tr><td><span class="sw" style="background:var(--w-ws)"></span>LRC</td><td>GPIO 16</td></tr>
+          <tr><td><span class="sw" style="background:var(--w-clk)"></span>BCLK</td><td>GPIO 15</td></tr>
+          <tr><td><span class="sw" style="background:var(--w-data)"></span>DIN</td><td>GPIO 7</td></tr>
+          <tr><td>GAIN</td><td>Leave open (9 dB)<span class="sub">GND = 12 dB, 3V3 = 6 dB</span></td></tr>
+          <tr><td>SD</td><td>Leave open<span class="sub">On-board pull-up keeps it on, mixing L+R</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h3>Speaker</h3>
+      <table>
+        <thead><tr><th>Speaker</th><th>Connect to</th></tr></thead>
+        <tbody>
+          <tr><td><span class="sw" style="background:var(--w-spk)"></span>+</td><td>Amp output +</td></tr>
+          <tr><td><span class="sw" style="background:var(--w-spk)"></span>−</td><td>Amp output −<span class="sub">Never connect either terminal to GND. The amp output is bridged, not ground-referenced.</span></td></tr>
+        </tbody>
+      </table>
+      <h3>USB</h3>
+      <table>
+        <tbody>
+          <tr><td>USB port</td><td>Your Mac<span class="sub">Use the port wired to the S3's native USB (GPIO 19/20), often labelled USB rather than UART/COM. The console and flashing run over it.</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <div class="checks">
+    <section>
+      <h2>Placement</h2>
+      <ul>
+        <li>Mount the two mics <b>40–65 mm apart</b>, centre to centre, with their sound holes facing the same way. Measure the real spacing and set <code>Mic spacing</code> in menuconfig, because the direction estimate depends on it.</li>
+        <li>The angle reads <b>90° when the sound is straight ahead</b> of the mic pair, and 0° or 180° toward either end. Two mics can't tell front from back.</li>
+        <li>Keep the speaker as far from the mics as you can, and point it away from them.</li>
+        <li>Keep the I2S wires short (under ~15 cm), especially SCK and BCLK.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Before powering on</h2>
+      <ul>
+        <li>Check that both mic VDD pins go to <b>3V3</b>, not 5V.</li>
+        <li>Check mic A L/R → GND and mic B L/R → 3V3. If both are tied the same way, the two mics talk over each other on the data line.</li>
+        <li>All grounds are common: both mics, the amp and the ESP32.</li>
+        <li>Once flashed, run <code>beep 1000 300</code> to test the speaker and <code>doa 10</code> while clapping on each side to test the mics.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Pins to keep free</h2>
+      <div class="avoid">
+        <span class="chip"><b>GPIO 35–37</b> octal PSRAM</span>
+        <span class="chip"><b>GPIO 26–32</b> flash</span>
+        <span class="chip"><b>GPIO 19, 20</b> USB</span>
+        <span class="chip"><b>GPIO 0, 3, 45, 46</b> strapping</span>
+        <span class="chip"><b>GPIO 43, 44</b> UART0</span>
+      </div>
+      <p class="lede">Motor drivers and other parts can use GPIO 1, 2, 8–14, 17, 18, 21, 38–42 and 47–48.</p>
+    </section>
+  </div>
+</div>
+
+</body></html>

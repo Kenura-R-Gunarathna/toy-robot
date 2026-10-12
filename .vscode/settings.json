@@ -1,0 +1,8 @@
+{
+    // clangd must ask the Xtensa compiler where its headers are; otherwise it falls back to the macOS ones
+    // ('sys/features.h' not found, std::string_view shown as int, ...). The glob works on any machine.
+    "clangd.arguments": [
+        "--query-driver=**/.espressif/tools/xtensa-esp-elf/**/xtensa-esp32s3-elf-*",
+        "--background-index"
+    ]
+}

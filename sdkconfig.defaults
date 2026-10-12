@@ -27,13 +27,7 @@ CONFIG_COMPILER_OPTIMIZATION_PERF=y
 CONFIG_COMPILER_CXX_EXCEPTIONS=n
 CONFIG_COMPILER_CXX_RTTI=n
 
-# Cache tuned for speech models (matches esp-skainet)
+# Cache sizes for ML inference (large data cache, 64 B lines for the octal PSRAM)
 CONFIG_ESP32S3_INSTRUCTION_CACHE_32KB=y
 CONFIG_ESP32S3_DATA_CACHE_64KB=y
 CONFIG_ESP32S3_DATA_CACHE_LINE_64B=y
-
-# Speech recognition (esp-sr): "Hi ESP" wake word + English MultiNet7
-CONFIG_SR_WN_WN9_HIESP=y
-CONFIG_SR_MN_EN_MULTINET7_QUANT=y
-CONFIG_SR_MN_CN_NONE=y
-CONFIG_SR_VADN_VADNET1_MEDIUM=y

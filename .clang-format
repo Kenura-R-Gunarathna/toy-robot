@@ -1,0 +1,28 @@
+BasedOnStyle: LLVM
+Language: Cpp
+Standard: c++20
+ColumnLimit: 140
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+AccessModifierOffset: -4
+BreakBeforeBraces: Attach
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: true
+AllowShortBlocksOnASingleLine: Always
+
+# Column and Tabular Alignment
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AlignConsecutiveMacros: true
+AlignConsecutiveBitFields: true
+AlignOperands: Align
+AlignAfterOpenBracket: Align
+
+PointerAlignment: Right
+ReferenceAlignment: Right
+SpacesBeforeTrailingComments: 2
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 2

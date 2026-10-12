@@ -1,3 +1,9 @@
 CompileFlags:
   CompilationDatabase: build
-  Remove: [-mlongcalls, -fno-tree-switch-conversion, -fstrict-volatile-bitfields, -mdisable-hardware-atomics, -fno-shrink-wrap, -mdynconfig=*]
+  # GCC-only flags that clang does not know; -Werror would turn every warning in the editor into a red error
+  Remove: [-Werror, -mlongcalls, -mtext-section-literals, -fno-tree-switch-conversion, -fstrict-volatile-bitfields, -mdisable-hardware-atomics, -fno-shrink-wrap, -mdynconfig=*, -fno-shrink-wrap]
+
+Diagnostics:
+  # ESP-IDF headers are umbrella headers, so "not used directly" / "missing include" hints are mostly wrong here
+  UnusedIncludes: None
+  MissingIncludes: None

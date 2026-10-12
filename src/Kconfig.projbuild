@@ -16,26 +16,7 @@ menu "Microphone (INMP441, I2S)"
         default 14
         help
             The INMP441 sends 24-bit samples in 32-bit slots. They are shifted right by this many bits
-            to get 16-bit PCM. 16 is unity, 14 gives +12 dB which suits speech recognition at arm's length.
-    config MIC_SPACING_MM
-        int "Distance between the two mics (mm)"
-        range 20 150
-        default 60
-        help
-            Measured centre to centre. Used by direction-of-arrival; recommended 40-65 mm.
-endmenu
-
-menu "Sound direction (DOA)"
-    config DOA_MIN_LEVEL_DB
-        int "Minimum loudness to report a direction (dBFS)"
-        range -80 0
-        default -50
-        help
-            Quieter frames are ignored so background noise doesn't move the estimate.
-    config DOA_RESOLUTION_DEG
-        int "Angle search resolution (degrees)"
-        range 1 45
-        default 10
+            to get 16-bit PCM. 16 is unity, 14 gives +12 dB which suits speech at arm's length.
 endmenu
 
 menu "Speaker (MAX98357, I2S)"
@@ -49,7 +30,7 @@ menu "Speaker (MAX98357, I2S)"
         int "DIN GPIO"
         default 7
     config SPK_VOLUME
-        int "Tone volume (percent)"
+        int "Master speaker volume (percent)"
         range 0 100
         default 30
 endmenu
